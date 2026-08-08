@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Practice Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-timer {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .timer-display {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            color: #667eea;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-display.warning {
+            color: #e74c3c;
+        }
+
+        .metronome-link {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 13px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .metronome-link:hover {
+            background: #e8e8e8;
+        }
+
+        .chord-progression {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 2px solid #e8e8e8;
+        }
+
+        .chord-progression h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .chords {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chord {
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #333;
+            border-left: 3px solid #667eea;
+        }
+
+        .chord.diminished {
+            border-left-color: #e74c3c;
+        }
+
+        .checkbox-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: #f0f0f0;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .checkbox-item label {
+            flex: 1;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .checkbox-item input[type="checkbox"]:checked + label {
+            color: #667eea;
+            text-decoration: line-through;
+        }
+
+        .progress-section {
+            background: #f8f9fa;
+            border-left: 4px solid #27ae60;
+        }
+
+        .progress-log {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid #27ae60;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-date {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .log-content {
+            color: #555;
+            flex: 1;
+            margin: 0 15px;
+        }
+
+        .log-status {
+            background: #27ae60;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .log-status.partial {
+            background: #f39c12;
+        }
+
+        .reset-btn {
+            margin-top: 15px;
+            width: 100%;
+            background: #e74c3c;
+        }
+
+        .reset-btn:hover {
+            background: #c0392b;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .timer-display {
+                font-size: 24px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            select, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎹 Piano Practice Tracker</h1>
+        <div class="subtitle">Your 28-minute daily practice routine</div>
+
+        <!-- Section 1: A Dozen a Day -->
+        <div class="section">
+            <h2>
+                <span class="section-timer">8:00</span>
+                A Dozen a Day (Book 1)
+            </h2>
+            <div class="controls">
+                <select id="dozenExercise">
+                    <option value="">Select Exercise...</option>
+                </select>
+                <button onclick="startDozenTimer()">Start Timer</button>
+            </div>
+            <div class="timer-display" id="dozenTimer">8:00</div>
+            <div class="checkbox-section">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="dozenDone" onchange="saveProgress()">
+                    <label for="dozenDone">Completed (4x through)</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Scales & Chords -->
+        <div class="section">
+            <h2>
+                <span class="section-timer">10:00</span>
+                Scales & Chord Progressions
+            </h2>
+            <div class="controls">
+                <select id="scaleSelect">
+                    <option value="">Select Scale...</option>
+                </select>
+                <button onclick="startScaleTimer()">Start Timer</button>
+            </div>
+            <div class="timer-display" id="scaleTimer">10:00</div>
+            
+            <div class="chord-progression">
+                <h3>Roman Numeral Chord Progression for <span id="scaleLabel">selected scale</span>:</h3>
+                <div class="chords" id="chordsDisplay"></div>
+            </div>
+
+            <a href="https://www.metronomeonline.com/" target="_blank" class="metronome-link">🎵 Open Metronome (60 BPM)</a>
+
+            <div class="checkbox-section">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="scaleLeft" onchange="saveProgress()">
+                    <label for="scaleLeft">Left Hand ✓</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="scaleRight" onchange="saveProgress()">
+                    <label for="scaleRight">Right Hand ✓</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="scaleBoth" onchange="saveProgress()">
+                    <label for="scaleBoth">Both Hands ✓</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Kindle Book -->
+        <div class="section">
+            <h2>
+                <span class="section-timer">10:00</span>
+                Piano Exercises for Beginners (Kindle)
+            </h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Open your Kindle book and follow along for 10 minutes.</p>
+            <a href="https://www.amazon.com/dp/B0H4QSWFDG" target="_blank" class="metronome-link">📕 Open Kindle Book</a>
+            <div class="checkbox-section">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="kindleDone" onchange="saveProgress()">
+                    <label for="kindleDone">Completed</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Log -->
+        <div class="section progress-section">
+            <h2>📊 Practice Progress Log</h2>
+            <div class="progress-log" id="progressLog">
+                <p style="color: #999; text-align: center; padding: 20px;">No practice sessions yet. Start practicing!</p>
+            </div>
+            <button class="reset-btn" onclick="resetToday()">Reset Today's Session</button>
+            <button class="reset-btn" onclick="clearAllLogs()" style="background: #95a5a6; margin-top: 10px;">Clear All Logs</button>
+        </div>
+    </div>
+
+    <script>
+        // Data: A Dozen a Day Exercises
+        const dozenExercises = [
+            // Group 1
+            "Group 1: Exercise 1",
+            "Group 1: Exercise 2",
+            "Group 1: Exercise 3",
+            "Group 1: Exercise 4",
+            "Group 1: Exercise 5",
+            "Group 1: Exercise 6",
+            "Group 1: Exercise 7",
+            "Group 1: Exercise 8",
+            "Group 1: Exercise 9",
+            "Group 1: Exercise 10",
+            // Group 2
+            "Group 2: Exercise 1",
+            "Group 2: Exercise 2",
+            "Group 2: Exercise 3",
+            "Group 2: Exercise 4",
+            "Group 2: Exercise 5",
+            "Group 2: Exercise 6",
+            "Group 2: Exercise 7",
+            "Group 2: Exercise 8",
+            "Group 2: Exercise 9",
+            "Group 2: Exercise 10",
+            // Group 3
+            "Group 3: Exercise 1",
+            "Group 3: Exercise 2",
+            "Group 3: Exercise 3",
+            "Group 3: Exercise 4",
+            "Group 3: Exercise 5",
+            "Group 3: Exercise 6",
+            "Group 3: Exercise 7",
+            "Group 3: Exercise 8",
+            "Group 3: Exercise 9",
+            "Group 3: Exercise 10",
+            // Group 4
+            "Group 4: Exercise 1",
+            "Group 4: Exercise 2",
+            "Group 4: Exercise 3",
+            "Group 4: Exercise 4",
+            "Group 4: Exercise 5",
+            "Group 4: Exercise 6",
+            "Group 4: Exercise 7",
+            "Group 4: Exercise 8",
+            "Group 4: Exercise 9",
+            "Group 4: Exercise 10",
+            // Group 5
+            "Group 5: Exercise 1",
+            "Group 5: Exercise 2",
+            "Group 5: Exercise 3",
+            "Group 5: Exercise 4",
+            "Group 5: Exercise 5",
+            "Group 5: Exercise 6",
+            "Group 5: Exercise 7",
+            "Group 5: Exercise 8",
+            "Group 5: Exercise 9",
+            "Group 5: Exercise 10"
+        ];
+
+        // Data: Top 8 Major and Minor Scales with Roman Numeral Progressions
+        const scales = [
+            {
+                name: "C Major",
+                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
+                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+            },
+            {
+                name: "C Minor",
+                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
+                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+            },
+            {
+                name: "G Major",
+                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
+                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+            },
+            {
+                name: "G Minor",
+                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
+                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+            },
+            {
+                name: "D Major",
+                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
+                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+            },
+            {
+                name: "D Minor",
+                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
+                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+            },
+            {
+                name: "A Major",
+                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
+                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+            },
+            {
+                name: "A Minor",
+                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
+                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+            },
+            {
+                name: "E Major",
+                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
+                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+            },
+            {
+                name: "E Minor",
+                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
+                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+            },
+            {
+                name: "F Major",
+                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
+                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+            },
+            {
+                name: "F Minor",
+                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
+                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+            },
+            {
+                name: "B♭ Major",
+                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
+                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+            },
+            {
+                name: "B♭ Minor",
+                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
+                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+            }
+        ];
+
+        let dozenTimerInterval, scaleTimerInterval;
+        let currentScaleIndex = 0;
+
+        // Initialize
+        function init() {
+            populateDozenExercises();
+            populateScales();
+            loadProgress();
+        }
+
+        function populateDozenExercises() {
+            const select = document.getElementById('dozenExercise');
+            dozenExercises.forEach(ex => {
+                const option = document.createElement('option');
+                option.value = ex;
+                option.textContent = ex;
+                select.appendChild(option);
+            });
+        }
+
+        function populateScales() {
+            const select = document.getElementById('scaleSelect');
+            scales.forEach((scale, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = scale.name;
+                select.appendChild(option);
+            });
+            // Set to first scale by default
+            select.value = 0;
+            updateChordDisplay();
+        }
+
+        function updateChordDisplay() {
+            const select = document.getElementById('scaleSelect');
+            const scaleIndex = select.value;
+            const scale = scales[scaleIndex];
+            document.getElementById('scaleLabel').textContent = scale.name;
+            
+            const chordsDisplay = document.getElementById('chordsDisplay');
+            chordsDisplay.innerHTML = '';
+            scale.displayChords.forEach(chord => {
+                const div = document.createElement('div');
+                div.className = 'chord';
+                if (chord.includes('°')) {
+                    div.classList.add('diminished');
+                }
+                div.textContent = chord;
+                chordsDisplay.appendChild(div);
+            });
+        }
+
+        // Timers
+        function startDozenTimer() {
+            if (!document.getElementById('dozenExercise').value) {
+                alert('Please select an exercise first!');
+                return;
+            }
+            startTimer('dozenTimer', 480, 'dozenTimerInterval'); // 8 min = 480 sec
+        }
+
+        function startScaleTimer() {
+            if (!document.getElementById('scaleSelect').value) {
+                alert('Please select a scale first!');
+                return;
+            }
+            startTimer('scaleTimer', 600, 'scaleTimerInterval'); // 10 min = 600 sec
+        }
+
+        function startTimer(displayId, seconds, intervalKey) {
+            clearInterval(window[intervalKey]);
+            let timeLeft = seconds;
+            const display = document.getElementById(displayId);
+
+            function updateDisplay() {
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                display.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 60) {
+                    display.classList.add('warning');
+                } else {
+                    display.classList.remove('warning');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(window[intervalKey]);
+                    display.textContent = '0:00';
+                    playSound();
+                    return;
+                }
+                timeLeft--;
+            }
+
+            updateDisplay();
+            window[intervalKey] = setInterval(updateDisplay, 1000);
+        }
+
+        function playSound() {
+            // Simple beep using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Progress Tracking
+        function saveProgress() {
+            const progress = {
+                date: new Date().toDateString(),
+                dozenExercise: document.getElementById('dozenExercise').value,
+                dozenDone: document.getElementById('dozenDone').checked,
+                scale: document.getElementById('scaleSelect').value,
+                scaleLeft: document.getElementById('scaleLeft').checked,
+                scaleRight: document.getElementById('scaleRight').checked,
+                scaleBoth: document.getElementById('scaleBoth').checked,
+                kindleDone: document.getElementById('kindleDone').checked
+            };
+            localStorage.setItem('todayProgress', JSON.stringify(progress));
+            updateProgressLog();
+        }
+
+        function loadProgress() {
+            const today = new Date().toDateString();
+            const saved = localStorage.getItem('todayProgress');
+            
+            if (saved) {
+                const progress = JSON.parse(saved);
+                if (progress.date === today) {
+                    document.getElementById('dozenExercise').value = progress.dozenExercise || '';
+                    document.getElementById('dozenDone').checked = progress.dozenDone;
+                    document.getElementById('scaleSelect').value = progress.scale || 0;
+                    document.getElementById('scaleLeft').checked = progress.scaleLeft;
+                    document.getElementById('scaleRight').checked = progress.scaleRight;
+                    document.getElementById('scaleBoth').checked = progress.scaleBoth;
+                    document.getElementById('kindleDone').checked = progress.kindleDone;
+                    updateChordDisplay();
+                }
+            }
+            updateProgressLog();
+        }
+
+        function updateProgressLog() {
+            const logs = JSON.parse(localStorage.getItem('practiceLogs') || '[]');
+            const logDiv = document.getElementById('progressLog');
+            
+            if (logs.length === 0) {
+                logDiv.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No practice sessions yet. Start practicing!</p>';
+                return;
+            }
+
+            logDiv.innerHTML = '';
+            logs.reverse().forEach(log => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                
+                let completed = 0;
+                let total = 3;
+                if (log.dozenDone) completed++;
+                if (log.scaleComplete) completed++;
+                if (log.kindleDone) completed++;
+                
+                const status = completed === total ? 'COMPLETE' : 'PARTIAL';
+                const statusClass = completed === total ? '' : 'partial';
+                
+                entry.innerHTML = `
+                    <span class="log-date">${log.date}</span>
+                    <span class="log-content">
+                        ${log.dozenExercise ? log.dozenExercise + ' | ' : ''}
+                        ${log.scale ? scales[log.scale].name : ''} | 
+                        Exercises Done: ${completed}/${total}
+                    </span>
+                    <span class="log-status ${statusClass}">${status}</span>
+                `;
+                logDiv.appendChild(entry);
+            });
+        }
+
+        function resetToday() {
+            if (confirm('Reset today\'s practice session?')) {
+                document.getElementById('dozenDone').checked = false;
+                document.getElementById('scaleLeft').checked = false;
+                document.getElementById('scaleRight').checked = false;
+                document.getElementById('scaleBoth').checked = false;
+                document.getElementById('kindleDone').checked = false;
+                saveProgress();
+            }
+        }
+
+        function clearAllLogs() {
+            if (confirm('Clear all practice logs? This cannot be undone.')) {
+                localStorage.removeItem('practiceLogs');
+                updateProgressLog();
+            }
+        }
+
+        // Add event listener for scale changes
+        document.getElementById('scaleSelect').addEventListener('change', updateChordDisplay);
+
+        // Save progress to logs when all sections are done
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                const dozenDone = document.getElementById('dozenDone').checked;
+                const scaleComplete = document.getElementById('scaleLeft').checked && 
+                                    document.getElementById('scaleRight').checked && 
+                                    document.getElementById('scaleBoth').checked;
+                const kindleDone = document.getElementById('kindleDone').checked;
+
+                // If all done, save to logs
+                if (dozenDone && scaleComplete && kindleDone) {
+                    const today = new Date().toDateString();
+                    const logs = JSON.parse(localStorage.getItem('practiceLogs') || '[]');
+                    
+                    // Check if today already logged
+                    if (!logs.find(log => log.date === today)) {
+                        logs.push({
+                            date: today,
+                            dozenExercise: document.getElementById('dozenExercise').value,
+                            scale: document.getElementById('scaleSelect').value,
+                            dozenDone,
+                            scaleComplete,
+                            kindleDone
+                        });
+                        localStorage.setItem('practiceLogs', JSON.stringify(logs));
+                        updateProgressLog();
+                    }
+                }
+            });
+        });
+
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
