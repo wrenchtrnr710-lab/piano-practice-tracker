@@ -269,7 +269,7 @@
         }
 
         .dozen-inputs input {
-            min-width: 100px;
+            min-width: 80px;
         }
 
         .input-label {
@@ -297,6 +297,16 @@
             background: #d4edda;
             color: #155724;
             font-weight: bold;
+        }
+
+        .clear-btn {
+            background: #95a5a6;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        .clear-btn:hover {
+            background: #7f8c8d;
         }
 
         @media (max-width: 600px) {
@@ -343,17 +353,18 @@
             </h2>
             <div class="dozen-inputs">
                 <div class="input-wrapper">
-                    <label class="input-label">Group (1-5)</label>
-                    <input type="number" id="dozenGroup" min="1" max="5" placeholder="1" onkeypress="handleDozenEnter(event)">
+                    <label class="input-label">Group</label>
+                    <input type="number" id="dozenGroup" min="1" max="5" onkeypress="handleDozenEnter(event)">
                 </div>
                 <div class="input-wrapper">
-                    <label class="input-label">Exercise (1-15)</label>
-                    <input type="number" id="dozenExercise" min="1" max="15" placeholder="1" onkeypress="handleDozenEnter(event)">
+                    <label class="input-label">Exercise</label>
+                    <input type="number" id="dozenExercise" min="1" max="15" onkeypress="handleDozenEnter(event)">
                 </div>
                 <button onclick="startDozenTimer()">Start Timer</button>
+                <button class="clear-btn" onclick="clearDozenInputs()">Clear</button>
             </div>
             <div class="timer-display" id="dozenTimer">8:00</div>
-            <div class="dozen-status" id="dozenStatus">Enter Group and Exercise number, then press Enter</div>
+            <div class="dozen-status" id="dozenStatus">Enter Group and Exercise, then press Enter</div>
             <div class="checkbox-section">
                 <div class="checkbox-item">
                     <input type="checkbox" id="dozenDone" onchange="saveProgress()">
@@ -622,9 +633,16 @@
                 status.textContent = `✓ Group ${group}, Exercise ${exercise}`;
                 status.classList.remove('completed');
             } else {
-                status.textContent = 'Enter Group and Exercise number, then press Enter';
+                status.textContent = 'Enter Group and Exercise, then press Enter';
                 status.classList.remove('completed');
             }
+            saveProgress();
+        }
+
+        function clearDozenInputs() {
+            document.getElementById('dozenGroup').value = '';
+            document.getElementById('dozenExercise').value = '';
+            document.getElementById('dozenStatus').textContent = 'Enter Group and Exercise, then press Enter';
             saveProgress();
         }
 
