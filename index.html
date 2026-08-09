@@ -72,7 +72,7 @@
             flex-wrap: wrap;
         }
 
-        select, button {
+        select, button, input {
             padding: 10px 15px;
             border: 2px solid #667eea;
             border-radius: 8px;
@@ -83,9 +83,9 @@
             transition: all 0.3s ease;
         }
 
-        select {
+        select, input {
             flex: 1;
-            min-width: 150px;
+            min-width: 100px;
         }
 
         button {
@@ -113,22 +113,6 @@
             color: #e74c3c;
         }
 
-        .metronome-link {
-            display: inline-block;
-            background: #f0f0f0;
-            padding: 8px 12px;
-            border-radius: 6px;
-            color: #667eea;
-            text-decoration: none;
-            font-size: 13px;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-        }
-
-        .metronome-link:hover {
-            background: #e8e8e8;
-        }
-
         .chord-progression {
             background: white;
             padding: 15px;
@@ -140,23 +124,37 @@
         .chord-progression h3 {
             color: #333;
             font-size: 14px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .chords {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
         .chord {
             background: #f0f0f0;
-            padding: 8px 12px;
+            padding: 12px;
             border-radius: 6px;
+            border-left: 3px solid #667eea;
+            flex: 0 1 auto;
+            min-width: 100px;
+        }
+
+        .chord-numeral {
             font-family: 'Courier New', monospace;
             font-weight: bold;
             color: #333;
-            border-left: 3px solid #667eea;
+            margin-bottom: 6px;
+        }
+
+        .chord-notes {
+            font-size: 12px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            border-top: 1px solid #ddd;
+            padding-top: 6px;
         }
 
         .chord.diminished {
@@ -259,6 +257,37 @@
             background: #c0392b;
         }
 
+        .dozen-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .dozen-controls select {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .dozen-controls input {
+            min-width: 80px;
+        }
+
+        .dozen-status {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .dozen-status.completed {
+            background: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -272,8 +301,20 @@
                 flex-direction: column;
             }
 
-            select, button {
+            select, button, input {
                 width: 100%;
+            }
+
+            .dozen-controls {
+                flex-direction: column;
+            }
+
+            .chords {
+                flex-direction: column;
+            }
+
+            .chord {
+                min-width: auto;
             }
         }
     </style>
@@ -289,13 +330,22 @@
                 <span class="section-timer">8:00</span>
                 A Dozen a Day (Book 1)
             </h2>
-            <div class="controls">
+            <div class="dozen-controls">
+                <select id="dozenGroup">
+                    <option value="">Select Group...</option>
+                    <option value="1">Group 1</option>
+                    <option value="2">Group 2</option>
+                    <option value="3">Group 3</option>
+                    <option value="4">Group 4</option>
+                    <option value="5">Group 5</option>
+                </select>
                 <select id="dozenExercise">
                     <option value="">Select Exercise...</option>
                 </select>
                 <button onclick="startDozenTimer()">Start Timer</button>
             </div>
             <div class="timer-display" id="dozenTimer">8:00</div>
+            <div class="dozen-status" id="dozenStatus">Select group and exercise to begin</div>
             <div class="checkbox-section">
                 <div class="checkbox-item">
                     <input type="checkbox" id="dozenDone" onchange="saveProgress()">
@@ -323,7 +373,7 @@
                 <div class="chords" id="chordsDisplay"></div>
             </div>
 
-            <a href="https://www.metronomeonline.com/" target="_blank" class="metronome-link">🎵 Open Metronome (60 BPM)</a>
+            <a href="https://www.metronomeonline.com/" target="_blank" class="metronome-link" style="display: inline-block; background: #f0f0f0; padding: 8px 12px; border-radius: 6px; color: #667eea; text-decoration: none; font-size: 13px; margin-top: 10px; border: 1px solid #ddd;">🎵 Open Metronome (60 BPM)</a>
 
             <div class="checkbox-section">
                 <div class="checkbox-item">
@@ -348,7 +398,7 @@
                 Piano Exercises for Beginners (Kindle)
             </h2>
             <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Open your Kindle book and follow along for 10 minutes.</p>
-            <a href="https://www.amazon.com/dp/B0H4QSWFDG" target="_blank" class="metronome-link">📕 Open Kindle Book</a>
+            <a href="https://www.amazon.com/dp/B0H4QSWFDG" target="_blank" style="display: inline-block; background: #f0f0f0; padding: 8px 12px; border-radius: 6px; color: #667eea; text-decoration: none; font-size: 13px; border: 1px solid #ddd;">📕 Open Kindle Book</a>
             <div class="checkbox-section">
                 <div class="checkbox-item">
                     <input type="checkbox" id="kindleDone" onchange="saveProgress()">
@@ -369,157 +419,229 @@
     </div>
 
     <script>
-        // Data: A Dozen a Day Exercises
-        const dozenExercises = [
-            // Group 1
-            "Group 1: Exercise 1",
-            "Group 1: Exercise 2",
-            "Group 1: Exercise 3",
-            "Group 1: Exercise 4",
-            "Group 1: Exercise 5",
-            "Group 1: Exercise 6",
-            "Group 1: Exercise 7",
-            "Group 1: Exercise 8",
-            "Group 1: Exercise 9",
-            "Group 1: Exercise 10",
-            // Group 2
-            "Group 2: Exercise 1",
-            "Group 2: Exercise 2",
-            "Group 2: Exercise 3",
-            "Group 2: Exercise 4",
-            "Group 2: Exercise 5",
-            "Group 2: Exercise 6",
-            "Group 2: Exercise 7",
-            "Group 2: Exercise 8",
-            "Group 2: Exercise 9",
-            "Group 2: Exercise 10",
-            // Group 3
-            "Group 3: Exercise 1",
-            "Group 3: Exercise 2",
-            "Group 3: Exercise 3",
-            "Group 3: Exercise 4",
-            "Group 3: Exercise 5",
-            "Group 3: Exercise 6",
-            "Group 3: Exercise 7",
-            "Group 3: Exercise 8",
-            "Group 3: Exercise 9",
-            "Group 3: Exercise 10",
-            // Group 4
-            "Group 4: Exercise 1",
-            "Group 4: Exercise 2",
-            "Group 4: Exercise 3",
-            "Group 4: Exercise 4",
-            "Group 4: Exercise 5",
-            "Group 4: Exercise 6",
-            "Group 4: Exercise 7",
-            "Group 4: Exercise 8",
-            "Group 4: Exercise 9",
-            "Group 4: Exercise 10",
-            // Group 5
-            "Group 5: Exercise 1",
-            "Group 5: Exercise 2",
-            "Group 5: Exercise 3",
-            "Group 5: Exercise 4",
-            "Group 5: Exercise 5",
-            "Group 5: Exercise 6",
-            "Group 5: Exercise 7",
-            "Group 5: Exercise 8",
-            "Group 5: Exercise 9",
-            "Group 5: Exercise 10"
-        ];
+        // Data: A Dozen a Day - exercises per group
+        const dozenGroups = {
+            1: 10,
+            2: 10,
+            3: 10,
+            4: 10,
+            5: 10
+        };
 
-        // Data: Top 8 Major and Minor Scales with Roman Numeral Progressions
+        // Data: Scales with notes for each chord
         const scales = [
             {
                 name: "C Major",
-                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
-                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+                chords: [
+                    { numeral: "I", notes: "C - E - G" },
+                    { numeral: "ii", notes: "D - F - A" },
+                    { numeral: "iii", notes: "E - G - B" },
+                    { numeral: "IV", notes: "F - A - C" },
+                    { numeral: "V", notes: "G - B - D" },
+                    { numeral: "vi", notes: "A - C - E" },
+                    { numeral: "vii°", notes: "B - D - F" }
+                ]
             },
             {
                 name: "C Minor",
-                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
-                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+                chords: [
+                    { numeral: "i", notes: "C - Eb - G" },
+                    { numeral: "ii°", notes: "D - F - Ab" },
+                    { numeral: "III", notes: "Eb - G - Bb" },
+                    { numeral: "iv", notes: "F - Ab - C" },
+                    { numeral: "v", notes: "G - Bb - D" },
+                    { numeral: "VI", notes: "Ab - C - Eb" },
+                    { numeral: "VII", notes: "Bb - D - F" }
+                ]
             },
             {
                 name: "G Major",
-                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
-                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+                chords: [
+                    { numeral: "I", notes: "G - B - D" },
+                    { numeral: "ii", notes: "A - C - E" },
+                    { numeral: "iii", notes: "B - D - F#" },
+                    { numeral: "IV", notes: "C - E - G" },
+                    { numeral: "V", notes: "D - F# - A" },
+                    { numeral: "vi", notes: "E - G - B" },
+                    { numeral: "vii°", notes: "F# - A - C" }
+                ]
             },
             {
                 name: "G Minor",
-                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
-                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+                chords: [
+                    { numeral: "i", notes: "G - Bb - D" },
+                    { numeral: "ii°", notes: "A - C - Eb" },
+                    { numeral: "III", notes: "Bb - D - F" },
+                    { numeral: "iv", notes: "C - Eb - G" },
+                    { numeral: "v", notes: "D - F - A" },
+                    { numeral: "VI", notes: "Eb - G - Bb" },
+                    { numeral: "VII", notes: "F - A - C" }
+                ]
             },
             {
                 name: "D Major",
-                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
-                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+                chords: [
+                    { numeral: "I", notes: "D - F# - A" },
+                    { numeral: "ii", notes: "E - G - B" },
+                    { numeral: "iii", notes: "F# - A - C#" },
+                    { numeral: "IV", notes: "G - B - D" },
+                    { numeral: "V", notes: "A - C# - E" },
+                    { numeral: "vi", notes: "B - D - F#" },
+                    { numeral: "vii°", notes: "C# - E - G" }
+                ]
             },
             {
                 name: "D Minor",
-                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
-                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+                chords: [
+                    { numeral: "i", notes: "D - F - A" },
+                    { numeral: "ii°", notes: "E - G - Bb" },
+                    { numeral: "III", notes: "F - A - C" },
+                    { numeral: "iv", notes: "G - Bb - D" },
+                    { numeral: "v", notes: "A - C - E" },
+                    { numeral: "VI", notes: "Bb - D - F" },
+                    { numeral: "VII", notes: "C - E - G" }
+                ]
             },
             {
                 name: "A Major",
-                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
-                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+                chords: [
+                    { numeral: "I", notes: "A - C# - E" },
+                    { numeral: "ii", notes: "B - D - F#" },
+                    { numeral: "iii", notes: "C# - E - G#" },
+                    { numeral: "IV", notes: "D - F# - A" },
+                    { numeral: "V", notes: "E - G# - B" },
+                    { numeral: "vi", notes: "F# - A - C#" },
+                    { numeral: "vii°", notes: "G# - B - D" }
+                ]
             },
             {
                 name: "A Minor",
-                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
-                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+                chords: [
+                    { numeral: "i", notes: "A - C - E" },
+                    { numeral: "ii°", notes: "B - D - F" },
+                    { numeral: "III", notes: "C - E - G" },
+                    { numeral: "iv", notes: "D - F - A" },
+                    { numeral: "v", notes: "E - G - B" },
+                    { numeral: "VI", notes: "F - A - C" },
+                    { numeral: "VII", notes: "G - B - D" }
+                ]
             },
             {
                 name: "E Major",
-                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
-                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+                chords: [
+                    { numeral: "I", notes: "E - G# - B" },
+                    { numeral: "ii", notes: "F# - A - C#" },
+                    { numeral: "iii", notes: "G# - B - D#" },
+                    { numeral: "IV", notes: "A - C# - E" },
+                    { numeral: "V", notes: "B - D# - F#" },
+                    { numeral: "vi", notes: "C# - E - G#" },
+                    { numeral: "vii°", notes: "D# - F# - A" }
+                ]
             },
             {
                 name: "E Minor",
-                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
-                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+                chords: [
+                    { numeral: "i", notes: "E - G - B" },
+                    { numeral: "ii°", notes: "F# - A - C" },
+                    { numeral: "III", notes: "G - B - D" },
+                    { numeral: "iv", notes: "A - C - E" },
+                    { numeral: "v", notes: "B - D - F#" },
+                    { numeral: "VI", notes: "C - E - G" },
+                    { numeral: "VII", notes: "D - F# - A" }
+                ]
             },
             {
                 name: "F Major",
-                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
-                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+                chords: [
+                    { numeral: "I", notes: "F - A - C" },
+                    { numeral: "ii", notes: "G - Bb - D" },
+                    { numeral: "iii", notes: "A - C - E" },
+                    { numeral: "IV", notes: "Bb - D - F" },
+                    { numeral: "V", notes: "C - E - G" },
+                    { numeral: "vi", notes: "D - F - A" },
+                    { numeral: "vii°", notes: "E - G - Bb" }
+                ]
             },
             {
                 name: "F Minor",
-                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
-                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+                chords: [
+                    { numeral: "i", notes: "F - Ab - C" },
+                    { numeral: "ii°", notes: "G - Bb - Db" },
+                    { numeral: "III", notes: "Ab - C - Eb" },
+                    { numeral: "iv", notes: "Bb - Db - F" },
+                    { numeral: "v", notes: "C - Eb - G" },
+                    { numeral: "VI", notes: "Db - F - Ab" },
+                    { numeral: "VII", notes: "Eb - G - Bb" }
+                ]
             },
             {
                 name: "B♭ Major",
-                chords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"],
-                displayChords: ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+                chords: [
+                    { numeral: "I", notes: "Bb - D - F" },
+                    { numeral: "ii", notes: "C - Eb - G" },
+                    { numeral: "iii", notes: "D - F - A" },
+                    { numeral: "IV", notes: "Eb - G - Bb" },
+                    { numeral: "V", notes: "F - A - C" },
+                    { numeral: "vi", notes: "G - Bb - D" },
+                    { numeral: "vii°", notes: "A - C - Eb" }
+                ]
             },
             {
                 name: "B♭ Minor",
-                chords: ["i", "ii°", "III", "iv", "v", "VI", "VII"],
-                displayChords: ["i", "ii°", "III", "iv", "v", "VI", "VII"]
+                chords: [
+                    { numeral: "i", notes: "Bb - Db - F" },
+                    { numeral: "ii°", notes: "C - Eb - Gb" },
+                    { numeral: "III", notes: "Db - F - Ab" },
+                    { numeral: "iv", notes: "Eb - Gb - Bb" },
+                    { numeral: "v", notes: "F - Ab - C" },
+                    { numeral: "VI", notes: "Gb - Bb - Db" },
+                    { numeral: "VII", notes: "Ab - C - Eb" }
+                ]
             }
         ];
 
         let dozenTimerInterval, scaleTimerInterval;
-        let currentScaleIndex = 0;
 
         // Initialize
         function init() {
-            populateDozenExercises();
             populateScales();
+            setupDozenGroupListener();
             loadProgress();
         }
 
-        function populateDozenExercises() {
-            const select = document.getElementById('dozenExercise');
-            dozenExercises.forEach(ex => {
-                const option = document.createElement('option');
-                option.value = ex;
-                option.textContent = ex;
-                select.appendChild(option);
+        function setupDozenGroupListener() {
+            const groupSelect = document.getElementById('dozenGroup');
+            const exerciseSelect = document.getElementById('dozenExercise');
+            
+            groupSelect.addEventListener('change', function() {
+                exerciseSelect.innerHTML = '<option value="">Select Exercise...</option>';
+                if (this.value) {
+                    const numExercises = dozenGroups[this.value];
+                    for (let i = 1; i <= numExercises; i++) {
+                        const option = document.createElement('option');
+                        option.value = `${this.value}-${i}`;
+                        option.textContent = `Exercise ${i}`;
+                        exerciseSelect.appendChild(option);
+                    }
+                }
+                updateDozenStatus();
             });
+
+            exerciseSelect.addEventListener('change', updateDozenStatus);
+        }
+
+        function updateDozenStatus() {
+            const group = document.getElementById('dozenGroup').value;
+            const exercise = document.getElementById('dozenExercise').value;
+            const status = document.getElementById('dozenStatus');
+
+            if (group && exercise) {
+                status.textContent = `✓ Selected: Group ${group}, Exercise ${exercise.split('-')[1]}`;
+                status.classList.remove('completed');
+            } else {
+                status.textContent = 'Select group and exercise to begin';
+                status.classList.remove('completed');
+            }
         }
 
         function populateScales() {
@@ -543,13 +665,16 @@
             
             const chordsDisplay = document.getElementById('chordsDisplay');
             chordsDisplay.innerHTML = '';
-            scale.displayChords.forEach(chord => {
+            scale.chords.forEach(chord => {
                 const div = document.createElement('div');
                 div.className = 'chord';
-                if (chord.includes('°')) {
+                if (chord.numeral.includes('°')) {
                     div.classList.add('diminished');
                 }
-                div.textContent = chord;
+                div.innerHTML = `
+                    <div class="chord-numeral">${chord.numeral}</div>
+                    <div class="chord-notes">${chord.notes}</div>
+                `;
                 chordsDisplay.appendChild(div);
             });
         }
@@ -557,7 +682,7 @@
         // Timers
         function startDozenTimer() {
             if (!document.getElementById('dozenExercise').value) {
-                alert('Please select an exercise first!');
+                alert('Please select group and exercise first!');
                 return;
             }
             startTimer('dozenTimer', 480, 'dozenTimerInterval'); // 8 min = 480 sec
@@ -602,27 +727,32 @@
 
         function playSound() {
             // Simple beep using Web Audio API
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('Audio not available');
+            }
         }
 
         // Progress Tracking
         function saveProgress() {
             const progress = {
                 date: new Date().toDateString(),
+                dozenGroup: document.getElementById('dozenGroup').value,
                 dozenExercise: document.getElementById('dozenExercise').value,
                 dozenDone: document.getElementById('dozenDone').checked,
                 scale: document.getElementById('scaleSelect').value,
@@ -642,6 +772,9 @@
             if (saved) {
                 const progress = JSON.parse(saved);
                 if (progress.date === today) {
+                    document.getElementById('dozenGroup').value = progress.dozenGroup || '';
+                    // Trigger change event to populate exercises
+                    document.getElementById('dozenGroup').dispatchEvent(new Event('change'));
                     document.getElementById('dozenExercise').value = progress.dozenExercise || '';
                     document.getElementById('dozenDone').checked = progress.dozenDone;
                     document.getElementById('scaleSelect').value = progress.scale || 0;
@@ -650,6 +783,7 @@
                     document.getElementById('scaleBoth').checked = progress.scaleBoth;
                     document.getElementById('kindleDone').checked = progress.kindleDone;
                     updateChordDisplay();
+                    updateDozenStatus();
                 }
             }
             updateProgressLog();
@@ -681,9 +815,9 @@
                 entry.innerHTML = `
                     <span class="log-date">${log.date}</span>
                     <span class="log-content">
-                        ${log.dozenExercise ? log.dozenExercise + ' | ' : ''}
-                        ${log.scale ? scales[log.scale].name : ''} | 
-                        Exercises Done: ${completed}/${total}
+                        ${log.dozenExercise ? 'G' + log.dozenExercise.split('-')[0] + ' Ex' + log.dozenExercise.split('-')[1] + ' | ' : ''}
+                        ${log.scale !== undefined ? scales[log.scale].name : ''} | 
+                        Done: ${completed}/${total}
                     </span>
                     <span class="log-status ${statusClass}">${status}</span>
                 `;
