@@ -88,6 +88,10 @@
             min-width: 100px;
         }
 
+        input {
+            cursor: text;
+        }
+
         button {
             background: #667eea;
             color: white;
@@ -257,20 +261,27 @@
             background: #c0392b;
         }
 
-        .dozen-controls {
+        .dozen-inputs {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             align-items: flex-end;
         }
 
-        .dozen-controls select {
-            flex: 1;
-            min-width: 120px;
+        .dozen-inputs input {
+            min-width: 100px;
         }
 
-        .dozen-controls input {
-            min-width: 80px;
+        .input-label {
+            font-size: 12px;
+            color: #666;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
         }
 
         .dozen-status {
@@ -305,7 +316,7 @@
                 width: 100%;
             }
 
-            .dozen-controls {
+            .dozen-inputs {
                 flex-direction: column;
             }
 
@@ -330,22 +341,19 @@
                 <span class="section-timer">8:00</span>
                 A Dozen a Day (Book 1)
             </h2>
-            <div class="dozen-controls">
-                <select id="dozenGroup">
-                    <option value="">Select Group...</option>
-                    <option value="1">Group 1</option>
-                    <option value="2">Group 2</option>
-                    <option value="3">Group 3</option>
-                    <option value="4">Group 4</option>
-                    <option value="5">Group 5</option>
-                </select>
-                <select id="dozenExercise">
-                    <option value="">Select Exercise...</option>
-                </select>
+            <div class="dozen-inputs">
+                <div class="input-wrapper">
+                    <label class="input-label">Group (1-5)</label>
+                    <input type="number" id="dozenGroup" min="1" max="5" placeholder="1" onkeypress="handleDozenEnter(event)">
+                </div>
+                <div class="input-wrapper">
+                    <label class="input-label">Exercise (1-15)</label>
+                    <input type="number" id="dozenExercise" min="1" max="15" placeholder="1" onkeypress="handleDozenEnter(event)">
+                </div>
                 <button onclick="startDozenTimer()">Start Timer</button>
             </div>
             <div class="timer-display" id="dozenTimer">8:00</div>
-            <div class="dozen-status" id="dozenStatus">Select group and exercise to begin</div>
+            <div class="dozen-status" id="dozenStatus">Enter Group and Exercise number, then press Enter</div>
             <div class="checkbox-section">
                 <div class="checkbox-item">
                     <input type="checkbox" id="dozenDone" onchange="saveProgress()">
@@ -373,7 +381,7 @@
                 <div class="chords" id="chordsDisplay"></div>
             </div>
 
-            <a href="https://www.metronomeonline.com/" target="_blank" class="metronome-link" style="display: inline-block; background: #f0f0f0; padding: 8px 12px; border-radius: 6px; color: #667eea; text-decoration: none; font-size: 13px; margin-top: 10px; border: 1px solid #ddd;">🎵 Open Metronome (60 BPM)</a>
+            <a href="https://www.metronomeonline.com/" target="_blank" style="display: inline-block; background: #f0f0f0; padding: 8px 12px; border-radius: 6px; color: #667eea; text-decoration: none; font-size: 13px; margin-top: 10px; border: 1px solid #ddd;">🎵 Open Metronome (60 BPM)</a>
 
             <div class="checkbox-section">
                 <div class="checkbox-item">
@@ -419,15 +427,6 @@
     </div>
 
     <script>
-        // Data: A Dozen a Day - exercises per group
-        const dozenGroups = {
-            1: 10,
-            2: 10,
-            3: 10,
-            4: 10,
-            5: 10
-        };
-
         // Data: Scales with notes for each chord
         const scales = [
             {
@@ -605,29 +604,13 @@
         // Initialize
         function init() {
             populateScales();
-            setupDozenGroupListener();
             loadProgress();
         }
 
-        function setupDozenGroupListener() {
-            const groupSelect = document.getElementById('dozenGroup');
-            const exerciseSelect = document.getElementById('dozenExercise');
-            
-            groupSelect.addEventListener('change', function() {
-                exerciseSelect.innerHTML = '<option value="">Select Exercise...</option>';
-                if (this.value) {
-                    const numExercises = dozenGroups[this.value];
-                    for (let i = 1; i <= numExercises; i++) {
-                        const option = document.createElement('option');
-                        option.value = `${this.value}-${i}`;
-                        option.textContent = `Exercise ${i}`;
-                        exerciseSelect.appendChild(option);
-                    }
-                }
+        function handleDozenEnter(event) {
+            if (event.key === 'Enter') {
                 updateDozenStatus();
-            });
-
-            exerciseSelect.addEventListener('change', updateDozenStatus);
+            }
         }
 
         function updateDozenStatus() {
@@ -636,12 +619,13 @@
             const status = document.getElementById('dozenStatus');
 
             if (group && exercise) {
-                status.textContent = `✓ Selected: Group ${group}, Exercise ${exercise.split('-')[1]}`;
+                status.textContent = `✓ Group ${group}, Exercise ${exercise}`;
                 status.classList.remove('completed');
             } else {
-                status.textContent = 'Select group and exercise to begin';
+                status.textContent = 'Enter Group and Exercise number, then press Enter';
                 status.classList.remove('completed');
             }
+            saveProgress();
         }
 
         function populateScales() {
@@ -682,7 +666,7 @@
         // Timers
         function startDozenTimer() {
             if (!document.getElementById('dozenExercise').value) {
-                alert('Please select group and exercise first!');
+                alert('Please enter group and exercise first!');
                 return;
             }
             startTimer('dozenTimer', 480, 'dozenTimerInterval'); // 8 min = 480 sec
@@ -773,8 +757,6 @@
                 const progress = JSON.parse(saved);
                 if (progress.date === today) {
                     document.getElementById('dozenGroup').value = progress.dozenGroup || '';
-                    // Trigger change event to populate exercises
-                    document.getElementById('dozenGroup').dispatchEvent(new Event('change'));
                     document.getElementById('dozenExercise').value = progress.dozenExercise || '';
                     document.getElementById('dozenDone').checked = progress.dozenDone;
                     document.getElementById('scaleSelect').value = progress.scale || 0;
@@ -815,7 +797,7 @@
                 entry.innerHTML = `
                     <span class="log-date">${log.date}</span>
                     <span class="log-content">
-                        ${log.dozenExercise ? 'G' + log.dozenExercise.split('-')[0] + ' Ex' + log.dozenExercise.split('-')[1] + ' | ' : ''}
+                        ${log.dozenExercise ? 'G' + log.dozenGroup + ' Ex' + log.dozenExercise + ' | ' : ''}
                         ${log.scale !== undefined ? scales[log.scale].name : ''} | 
                         Done: ${completed}/${total}
                     </span>
@@ -866,6 +848,7 @@
                         logs.push({
                             date: today,
                             dozenExercise: document.getElementById('dozenExercise').value,
+                            dozenGroup: document.getElementById('dozenGroup').value,
                             scale: document.getElementById('scaleSelect').value,
                             dozenDone,
                             scaleComplete,
