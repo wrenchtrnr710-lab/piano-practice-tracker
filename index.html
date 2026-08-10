@@ -131,6 +131,58 @@
             margin-bottom: 15px;
         }
 
+        .scale-guide {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 2px solid #e8e8e8;
+        }
+
+        .scale-guide h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .scale-guide-help {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .scale-guide-scroll {
+            overflow-x: auto;
+        }
+
+        .scale-guide-table {
+            width: 100%;
+            min-width: 520px;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-family: 'Courier New', monospace;
+        }
+
+        .scale-guide-table th,
+        .scale-guide-table td {
+            padding: 9px 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .scale-guide-table th {
+            width: 72px;
+            background: #eef0ff;
+            color: #555;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+        }
+
+        .scale-guide-table tr:first-child td {
+            color: #667eea;
+            font-weight: bold;
+        }
+
         .chords {
             display: flex;
             gap: 15px;
@@ -542,6 +594,12 @@
                 <button onclick="startScaleTimer()">Start Timer</button>
             </div>
             <div class="timer-display" id="scaleTimer">10:00</div>
+
+            <div class="scale-guide">
+                <h3>Scale Notes &amp; Suggested Fingering</h3>
+                <p class="scale-guide-help">Ascending one octave. 1 = thumb, 5 = pinky. Minor scales use the natural minor form. Read right-to-left when descending.</p>
+                <div class="scale-guide-scroll" id="scaleGuide"></div>
+            </div>
             
             <div class="chord-progression">
                 <h3>Roman Numeral Chord Progression for <span id="scaleLabel">selected scale</span>:</h3>
@@ -855,6 +913,77 @@
                 ]
             }
         ];
+
+        const standardFingering = {
+            rightHand: [1, 2, 3, 1, 2, 3, 4, 5],
+            leftHand: [5, 4, 3, 2, 1, 3, 2, 1]
+        };
+
+        const fKeyFingering = {
+            rightHand: [1, 2, 3, 4, 1, 2, 3, 4],
+            leftHand: [5, 4, 3, 2, 1, 3, 2, 1]
+        };
+
+        const scaleGuides = {
+            "C Major": {
+                notes: ["C", "D", "E", "F", "G", "A", "B", "C"],
+                ...standardFingering
+            },
+            "C Minor": {
+                notes: ["C", "D", "E♭", "F", "G", "A♭", "B♭", "C"],
+                ...standardFingering
+            },
+            "G Major": {
+                notes: ["G", "A", "B", "C", "D", "E", "F♯", "G"],
+                ...standardFingering
+            },
+            "G Minor": {
+                notes: ["G", "A", "B♭", "C", "D", "E♭", "F", "G"],
+                ...standardFingering
+            },
+            "D Major": {
+                notes: ["D", "E", "F♯", "G", "A", "B", "C♯", "D"],
+                ...standardFingering
+            },
+            "D Minor": {
+                notes: ["D", "E", "F", "G", "A", "B♭", "C", "D"],
+                ...standardFingering
+            },
+            "A Major": {
+                notes: ["A", "B", "C♯", "D", "E", "F♯", "G♯", "A"],
+                ...standardFingering
+            },
+            "A Minor": {
+                notes: ["A", "B", "C", "D", "E", "F", "G", "A"],
+                ...standardFingering
+            },
+            "E Major": {
+                notes: ["E", "F♯", "G♯", "A", "B", "C♯", "D♯", "E"],
+                ...standardFingering
+            },
+            "E Minor": {
+                notes: ["E", "F♯", "G", "A", "B", "C", "D", "E"],
+                ...standardFingering
+            },
+            "F Major": {
+                notes: ["F", "G", "A", "B♭", "C", "D", "E", "F"],
+                ...fKeyFingering
+            },
+            "F Minor": {
+                notes: ["F", "G", "A♭", "B♭", "C", "D♭", "E♭", "F"],
+                ...fKeyFingering
+            },
+            "B♭ Major": {
+                notes: ["B♭", "C", "D", "E♭", "F", "G", "A", "B♭"],
+                rightHand: [4, 1, 2, 3, 1, 2, 3, 4],
+                leftHand: [3, 2, 1, 4, 3, 2, 1, 3]
+            },
+            "B♭ Minor": {
+                notes: ["B♭", "C", "D♭", "E♭", "F", "G♭", "A♭", "B♭"],
+                rightHand: [4, 1, 2, 3, 1, 2, 3, 4],
+                leftHand: [2, 1, 3, 2, 1, 4, 3, 2]
+            }
+        };
 
         // Preserve the original numeric values so existing saved progress and logs
         // keep pointing to the same scales while the dropdown follows book order.
@@ -1290,6 +1419,7 @@
             const scaleIndex = select.value;
             const scale = scales[scaleIndex];
             document.getElementById('scaleLabel').textContent = scale.name;
+            updateScaleGuide(scale);
             
             const chordsDisplay = document.getElementById('chordsDisplay');
             chordsDisplay.innerHTML = '';
@@ -1305,6 +1435,38 @@
                 `;
                 chordsDisplay.appendChild(div);
             });
+        }
+
+        function updateScaleGuide(scale) {
+            const guide = scaleGuides[scale.name];
+            const container = document.getElementById('scaleGuide');
+            container.innerHTML = '';
+
+            const table = document.createElement('table');
+            table.className = 'scale-guide-table';
+            table.setAttribute('aria-label', `${scale.name} notes and suggested piano fingering`);
+
+            [
+                { label: 'Notes', values: guide.notes },
+                { label: 'Right hand', values: guide.rightHand },
+                { label: 'Left hand', values: guide.leftHand }
+            ].forEach(rowData => {
+                const row = document.createElement('tr');
+                const heading = document.createElement('th');
+                heading.scope = 'row';
+                heading.textContent = rowData.label;
+                row.appendChild(heading);
+
+                rowData.values.forEach(value => {
+                    const cell = document.createElement('td');
+                    cell.textContent = value;
+                    row.appendChild(cell);
+                });
+
+                table.appendChild(row);
+            });
+
+            container.appendChild(table);
         }
 
         // Timers
