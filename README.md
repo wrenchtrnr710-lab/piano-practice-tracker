@@ -17,6 +17,7 @@ This tracker helps you stay organized with your 28-minute daily practice routine
 - Scale choices follow their first appearance in *A Modern Method for Guitar, Volume 1*
 - Book page numbers appear beside each matching scale
 - Extra minor scales remain available after the book-ordered group
+- Each selection displays its ascending notes and suggested right- and left-hand piano fingering
 - Learn Roman numeral notation (I, IV, V for major; i, iv, v for minor)
 - Diminished chords marked with ° for learning
 - Track left hand, right hand, and both hands practice
