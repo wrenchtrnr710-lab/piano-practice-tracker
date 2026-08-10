@@ -14,8 +14,9 @@ This tracker helps you stay organized with your 28-minute daily practice routine
 - Each completed exercise is saved to the daily practice log immediately
 
 ### 2. **Scales & Chord Progressions** - 10 minutes
-- 8 Major scales (C, G, D, A, E, B, F, B♭)
-- 8 Relative minor scales
+- Scale choices follow their first appearance in *A Modern Method for Guitar, Volume 1*
+- Book page numbers appear beside each matching scale
+- Extra minor scales remain available after the book-ordered group
 - Learn Roman numeral notation (I, IV, V for major; i, iv, v for minor)
 - Diminished chords marked with ° for learning
 - Track left hand, right hand, and both hands practice
