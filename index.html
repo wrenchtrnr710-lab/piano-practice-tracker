@@ -856,6 +856,23 @@
             }
         ];
 
+        // Preserve the original numeric values so existing saved progress and logs
+        // keep pointing to the same scales while the dropdown follows book order.
+        const modernMethodScaleOrder = [
+            { scaleIndex: 2, page: 30 },  // G Major
+            { scaleIndex: 10, page: 34 }, // F Major
+            { scaleIndex: 7, page: 39 },  // A Minor
+            { scaleIndex: 9, page: 43 },  // E Minor
+            { scaleIndex: 5, page: 47 },  // D Minor
+            { scaleIndex: 12, page: 50 }, // B♭ Major
+            { scaleIndex: 4, page: 53 },  // D Major
+            { scaleIndex: 6, page: 56 },  // A Major
+            { scaleIndex: 0, page: 60 },  // C Major
+            { scaleIndex: 8, page: 119 }  // E Major
+        ];
+
+        const additionalScaleIndexes = [1, 3, 11, 13]; // C, G, F and B♭ minor
+
         let dozenTimerInterval, scaleTimerInterval;
         let dozenCompletedExercises = [];
         let metronomeInterval = null;
@@ -1243,14 +1260,28 @@
 
         function populateScales() {
             const select = document.getElementById('scaleSelect');
-            scales.forEach((scale, index) => {
+            const bookGroup = document.createElement('optgroup');
+            bookGroup.label = 'Modern Method for Guitar order';
+
+            modernMethodScaleOrder.forEach(({ scaleIndex, page }) => {
+                const scale = scales[scaleIndex];
                 const option = document.createElement('option');
-                option.value = index;
-                option.textContent = scale.name;
-                select.appendChild(option);
+                option.value = scaleIndex;
+                option.textContent = `${scale.name} — p. ${page}`;
+                bookGroup.appendChild(option);
             });
-            // Set to first scale by default
-            select.value = 0;
+
+            const additionalGroup = document.createElement('optgroup');
+            additionalGroup.label = 'Additional scales';
+            additionalScaleIndexes.forEach(scaleIndex => {
+                const option = document.createElement('option');
+                option.value = scaleIndex;
+                option.textContent = scales[scaleIndex].name;
+                additionalGroup.appendChild(option);
+            });
+
+            select.append(bookGroup, additionalGroup);
+            select.value = modernMethodScaleOrder[0].scaleIndex;
             updateChordDisplay();
         }
 
@@ -1286,7 +1317,7 @@
         }
 
         function startScaleTimer() {
-            if (!document.getElementById('scaleSelect').value) {
+            if (document.getElementById('scaleSelect').value === '') {
                 alert('Please select a scale first!');
                 return;
             }
