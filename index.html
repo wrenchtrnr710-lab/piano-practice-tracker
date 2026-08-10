@@ -299,6 +299,43 @@
             font-weight: bold;
         }
 
+        .completed-exercises {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .completed-exercises h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .completed-exercise-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .completed-exercise-item:last-child {
+            border-bottom: none;
+        }
+
+        .completed-exercise-item button {
+            padding: 6px 10px;
+            background: #95a5a6;
+            font-size: 12px;
+        }
+
+        .empty-completed-list {
+            color: #999;
+            font-size: 13px;
+        }
+
         .clear-btn {
             background: #95a5a6;
             padding: 10px 15px;
@@ -481,9 +518,13 @@
             <div class="timer-display" id="dozenTimer">8:00</div>
             <div class="dozen-status" id="dozenStatus">Enter Group and Exercise, then press Enter</div>
             <div class="checkbox-section">
-                <div class="checkbox-item">
-                    <input type="checkbox" id="dozenDone" onchange="saveProgress()">
-                    <label for="dozenDone">Completed (4x through)</label>
+                <input type="checkbox" id="dozenDone" hidden>
+                <button type="button" onclick="logCompletedDozenExercise()" style="width: 100%;">Log Completed Exercise (4x through)</button>
+            </div>
+            <div class="completed-exercises">
+                <h3>Completed exercises today</h3>
+                <div id="dozenCompletedList">
+                    <p class="empty-completed-list">No completed exercises yet.</p>
                 </div>
             </div>
         </div>
@@ -816,6 +857,7 @@
         ];
 
         let dozenTimerInterval, scaleTimerInterval;
+        let dozenCompletedExercises = [];
         let metronomeInterval = null;
         let metronomeBeat = 0;
         let metronomeAudioContext = null;
@@ -1132,6 +1174,73 @@
             saveProgress();
         }
 
+        function logCompletedDozenExercise() {
+            const groupInput = document.getElementById('dozenGroup');
+            const exerciseInput = document.getElementById('dozenExercise');
+            const group = Number.parseInt(groupInput.value, 10);
+            const exercise = Number.parseInt(exerciseInput.value, 10);
+
+            if (!Number.isInteger(group) || group < 1 || group > 5 ||
+                !Number.isInteger(exercise) || exercise < 1 || exercise > 15) {
+                alert('Enter a Group from 1–5 and an Exercise from 1–15 first.');
+                return;
+            }
+
+            const alreadyLogged = dozenCompletedExercises.some(item =>
+                item.group === group && item.exercise === exercise
+            );
+            if (alreadyLogged) {
+                alert(`Group ${group}, Exercise ${exercise} is already logged for today.`);
+                return;
+            }
+
+            dozenCompletedExercises.push({ group, exercise });
+            document.getElementById('dozenDone').checked = true;
+            document.getElementById('dozenStatus').textContent = `✓ Logged Group ${group}, Exercise ${exercise}`;
+            document.getElementById('dozenStatus').classList.add('completed');
+            exerciseInput.value = '';
+            renderDozenCompletedExercises();
+            saveProgress();
+            upsertPianoLog();
+        }
+
+        function removeCompletedDozenExercise(index) {
+            dozenCompletedExercises.splice(index, 1);
+            document.getElementById('dozenDone').checked = dozenCompletedExercises.length > 0;
+            renderDozenCompletedExercises();
+            saveProgress();
+            upsertPianoLog();
+        }
+
+        function renderDozenCompletedExercises() {
+            const list = document.getElementById('dozenCompletedList');
+            list.innerHTML = '';
+
+            if (dozenCompletedExercises.length === 0) {
+                const empty = document.createElement('p');
+                empty.className = 'empty-completed-list';
+                empty.textContent = 'No completed exercises yet.';
+                list.appendChild(empty);
+                return;
+            }
+
+            dozenCompletedExercises.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'completed-exercise-item';
+
+                const label = document.createElement('span');
+                label.textContent = `✓ Group ${item.group}, Exercise ${item.exercise}`;
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.textContent = 'Remove';
+                removeButton.addEventListener('click', () => removeCompletedDozenExercise(index));
+
+                row.append(label, removeButton);
+                list.appendChild(row);
+            });
+        }
+
         function populateScales() {
             const select = document.getElementById('scaleSelect');
             scales.forEach((scale, index) => {
@@ -1242,7 +1351,8 @@
                 date: new Date().toDateString(),
                 dozenGroup: document.getElementById('dozenGroup').value,
                 dozenExercise: document.getElementById('dozenExercise').value,
-                dozenDone: document.getElementById('dozenDone').checked,
+                dozenDone: dozenCompletedExercises.length > 0,
+                dozenCompletedExercises: dozenCompletedExercises.map(item => ({ ...item })),
                 scale: document.getElementById('scaleSelect').value,
                 scaleLeft: document.getElementById('scaleLeft').checked,
                 scaleRight: document.getElementById('scaleRight').checked,
@@ -1262,7 +1372,25 @@
                 if (progress.date === today) {
                     document.getElementById('dozenGroup').value = progress.dozenGroup || '';
                     document.getElementById('dozenExercise').value = progress.dozenExercise || '';
-                    document.getElementById('dozenDone').checked = progress.dozenDone;
+                    dozenCompletedExercises = Array.isArray(progress.dozenCompletedExercises)
+                        ? progress.dozenCompletedExercises
+                            .map(item => ({
+                                group: Number.parseInt(item.group, 10),
+                                exercise: Number.parseInt(item.exercise, 10)
+                            }))
+                            .filter(item => Number.isInteger(item.group) && Number.isInteger(item.exercise))
+                        : [];
+
+                    // Preserve a completion saved by the previous single-exercise version.
+                    if (dozenCompletedExercises.length === 0 && progress.dozenDone &&
+                        progress.dozenGroup && progress.dozenExercise) {
+                        dozenCompletedExercises.push({
+                            group: Number.parseInt(progress.dozenGroup, 10),
+                            exercise: Number.parseInt(progress.dozenExercise, 10)
+                        });
+                    }
+
+                    document.getElementById('dozenDone').checked = dozenCompletedExercises.length > 0;
                     document.getElementById('scaleSelect').value = progress.scale || 0;
                     document.getElementById('scaleLeft').checked = progress.scaleLeft;
                     document.getElementById('scaleRight').checked = progress.scaleRight;
@@ -1272,6 +1400,42 @@
                     updateDozenStatus();
                 }
             }
+            renderDozenCompletedExercises();
+            updateProgressLog();
+        }
+
+        function upsertPianoLog() {
+            const today = new Date().toDateString();
+            const logs = JSON.parse(localStorage.getItem('practiceLogs') || '[]');
+            const scaleComplete = document.getElementById('scaleLeft').checked &&
+                                document.getElementById('scaleRight').checked &&
+                                document.getElementById('scaleBoth').checked;
+            const kindleDone = document.getElementById('kindleDone').checked;
+            const existingIndex = logs.findIndex(log => log.date === today);
+            const hasActivity = dozenCompletedExercises.length > 0 || scaleComplete || kindleDone;
+
+            if (!hasActivity) {
+                if (existingIndex >= 0) logs.splice(existingIndex, 1);
+            } else {
+                const log = {
+                    date: today,
+                    dozenExercise: dozenCompletedExercises[0]?.exercise || '',
+                    dozenGroup: dozenCompletedExercises[0]?.group || '',
+                    dozenCompletedExercises: dozenCompletedExercises.map(item => ({ ...item })),
+                    scale: document.getElementById('scaleSelect').value,
+                    dozenDone: dozenCompletedExercises.length > 0,
+                    scaleComplete,
+                    kindleDone
+                };
+
+                if (existingIndex >= 0) {
+                    logs[existingIndex] = log;
+                } else {
+                    logs.push(log);
+                }
+            }
+
+            localStorage.setItem('practiceLogs', JSON.stringify(logs));
             updateProgressLog();
         }
 
@@ -1285,13 +1449,22 @@
             }
 
             logDiv.innerHTML = '';
-            logs.reverse().forEach(log => {
+            logs.slice().reverse().forEach(log => {
                 const entry = document.createElement('div');
                 entry.className = 'log-entry';
+
+                const completedExercises = Array.isArray(log.dozenCompletedExercises)
+                    ? log.dozenCompletedExercises
+                    : (log.dozenDone && log.dozenExercise
+                        ? [{ group: log.dozenGroup, exercise: log.dozenExercise }]
+                        : []);
+                const exerciseSummary = completedExercises
+                    .map(item => `G${item.group} Ex${item.exercise}`)
+                    .join(', ');
                 
                 let completed = 0;
                 let total = 3;
-                if (log.dozenDone) completed++;
+                if (completedExercises.length > 0) completed++;
                 if (log.scaleComplete) completed++;
                 if (log.kindleDone) completed++;
                 
@@ -1301,7 +1474,7 @@
                 entry.innerHTML = `
                     <span class="log-date">${log.date}</span>
                     <span class="log-content">
-                        ${log.dozenExercise ? 'G' + log.dozenGroup + ' Ex' + log.dozenExercise + ' | ' : ''}
+                        ${completedExercises.length > 0 ? `A Dozen (${completedExercises.length}): ${exerciseSummary} | ` : ''}
                         ${log.scale !== undefined ? scales[log.scale].name : ''} | 
                         Done: ${completed}/${total}
                     </span>
@@ -1313,11 +1486,13 @@
 
         function resetToday() {
             if (confirm('Reset today\'s practice session?')) {
+                dozenCompletedExercises = [];
                 document.getElementById('dozenDone').checked = false;
                 document.getElementById('scaleLeft').checked = false;
                 document.getElementById('scaleRight').checked = false;
                 document.getElementById('scaleBoth').checked = false;
                 document.getElementById('kindleDone').checked = false;
+                renderDozenCompletedExercises();
                 saveProgress();
             }
         }
@@ -1332,36 +1507,11 @@
         // Add event listener for scale changes
         document.getElementById('scaleSelect').addEventListener('change', updateChordDisplay);
 
-        // Save progress to logs when all sections are done
+        // Keep today's log current as Piano sections are completed.
         const checkboxes = document.querySelectorAll('#pianoPage input[type="checkbox"]');
         checkboxes.forEach(cb => {
             cb.addEventListener('change', () => {
-                const dozenDone = document.getElementById('dozenDone').checked;
-                const scaleComplete = document.getElementById('scaleLeft').checked && 
-                                    document.getElementById('scaleRight').checked && 
-                                    document.getElementById('scaleBoth').checked;
-                const kindleDone = document.getElementById('kindleDone').checked;
-
-                // If all done, save to logs
-                if (dozenDone && scaleComplete && kindleDone) {
-                    const today = new Date().toDateString();
-                    const logs = JSON.parse(localStorage.getItem('practiceLogs') || '[]');
-                    
-                    // Check if today already logged
-                    if (!logs.find(log => log.date === today)) {
-                        logs.push({
-                            date: today,
-                            dozenExercise: document.getElementById('dozenExercise').value,
-                            dozenGroup: document.getElementById('dozenGroup').value,
-                            scale: document.getElementById('scaleSelect').value,
-                            dozenDone,
-                            scaleComplete,
-                            kindleDone
-                        });
-                        localStorage.setItem('practiceLogs', JSON.stringify(logs));
-                        updateProgressLog();
-                    }
-                }
+                upsertPianoLog();
             });
         });
 

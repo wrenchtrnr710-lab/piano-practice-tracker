@@ -9,7 +9,9 @@ This tracker helps you stay organized with your 28-minute daily practice routine
 ### 1. **A Dozen a Day (Book 1)** - 8 minutes
 - Select from all 50 exercises across 5 groups
 - Timer to keep you on track
-- Checkbox to mark when you've completed 4 repetitions
+- Log each exercise after completing 4 repetitions
+- Complete several exercises in one session and see them listed individually
+- Each completed exercise is saved to the daily practice log immediately
 
 ### 2. **Scales & Chord Progressions** - 10 minutes
 - 8 Major scales (C, G, D, A, E, B, F, B♭)
