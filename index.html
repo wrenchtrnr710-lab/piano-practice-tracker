@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piano Practice Tracker</title>
+    <title>Music Practice Tracker</title>
     <style>
         * {
             margin: 0;
@@ -309,6 +309,109 @@
             background: #7f8c8d;
         }
 
+        .practice-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            background: #eef0ff;
+            color: #667eea;
+            border: 2px solid #d9ddff;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .practice-page {
+            display: none;
+        }
+
+        .practice-page.active {
+            display: block;
+        }
+
+        .guitar-section {
+            border-left-color: #b76632;
+        }
+
+        .guitar-section .section-timer,
+        .guitar-page .timer-display,
+        .guitar-page .log-date {
+            color: #b76632;
+        }
+
+        .guitar-page input,
+        .guitar-page textarea {
+            border-color: #b76632;
+        }
+
+        .guitar-page button:not(.reset-btn):not(.clear-btn):not(.tab-btn) {
+            background: #b76632;
+        }
+
+        .guitar-page button:not(.reset-btn):not(.clear-btn):not(.tab-btn):hover {
+            background: #8f4521;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .field-grid .input-wrapper.full-width {
+            grid-column: 1 / -1;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 74px;
+            padding: 10px 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .timer-controls {
+            display: grid;
+            grid-template-columns: minmax(110px, 1fr) repeat(3, auto);
+            gap: 10px;
+            align-items: end;
+        }
+
+        .timer-controls input {
+            width: 100%;
+        }
+
+        .metronome-panel {
+            display: grid;
+            grid-template-columns: minmax(110px, 1fr) auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .metronome-status {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            background: white;
+            color: #666;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -330,6 +433,12 @@
                 flex-direction: column;
             }
 
+            .field-grid,
+            .timer-controls,
+            .metronome-panel {
+                grid-template-columns: 1fr;
+            }
+
             .chords {
                 flex-direction: column;
             }
@@ -342,8 +451,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎹 Piano Practice Tracker</h1>
-        <div class="subtitle">Your 28-minute daily practice routine</div>
+        <div class="practice-tabs" role="tablist" aria-label="Practice instrument">
+            <button class="tab-btn active" id="pianoTab" role="tab" aria-selected="true" aria-controls="pianoPage" onclick="switchPracticePage('piano')">🎹 Piano</button>
+            <button class="tab-btn" id="guitarTab" role="tab" aria-selected="false" aria-controls="guitarPage" onclick="switchPracticePage('guitar')">🎸 Guitar</button>
+        </div>
+
+        <div class="practice-page active" id="pianoPage" role="tabpanel" aria-labelledby="pianoTab">
+            <h1>🎹 Piano Practice Tracker</h1>
+            <div class="subtitle">Your 28-minute daily practice routine</div>
 
         <!-- Section 1: A Dozen a Day -->
         <div class="section">
@@ -427,13 +542,103 @@
         </div>
 
         <!-- Progress Log -->
-        <div class="section progress-section">
-            <h2>📊 Practice Progress Log</h2>
-            <div class="progress-log" id="progressLog">
-                <p style="color: #999; text-align: center; padding: 20px;">No practice sessions yet. Start practicing!</p>
+            <div class="section progress-section">
+                <h2>📊 Practice Progress Log</h2>
+                <div class="progress-log" id="progressLog">
+                    <p style="color: #999; text-align: center; padding: 20px;">No practice sessions yet. Start practicing!</p>
+                </div>
+                <button class="reset-btn" onclick="resetToday()">Reset Today's Session</button>
+                <button class="reset-btn" onclick="clearAllLogs()" style="background: #95a5a6; margin-top: 10px;">Clear All Logs</button>
             </div>
-            <button class="reset-btn" onclick="resetToday()">Reset Today's Session</button>
-            <button class="reset-btn" onclick="clearAllLogs()" style="background: #95a5a6; margin-top: 10px;">Clear All Logs</button>
+        </div>
+
+        <div class="practice-page guitar-page" id="guitarPage" role="tabpanel" aria-labelledby="guitarTab">
+            <h1>🎸 Guitar Practice Tracker</h1>
+            <div class="subtitle">Your 25-minute daily guitar routine</div>
+
+            <div class="section guitar-section">
+                <h2>
+                    <span class="section-timer">10:00</span>
+                    Finger Exercises
+                </h2>
+                <div class="field-grid">
+                    <div class="input-wrapper">
+                        <label class="input-label" for="guitarFingerBook">Book</label>
+                        <input type="text" id="guitarFingerBook" autocomplete="off" oninput="saveGuitarProgress()">
+                    </div>
+                    <div class="input-wrapper">
+                        <label class="input-label" for="guitarFingerLesson">Lesson</label>
+                        <input type="text" id="guitarFingerLesson" autocomplete="off" oninput="saveGuitarProgress()">
+                    </div>
+                </div>
+                <div class="timer-controls">
+                    <div class="input-wrapper">
+                        <label class="input-label" for="guitarFingerMinutes">Timer minutes</label>
+                        <input type="number" id="guitarFingerMinutes" min="1" max="120" value="10" onchange="updateGuitarTimerDuration('finger')">
+                    </div>
+                    <button onclick="startGuitarTimer('finger')">Start</button>
+                    <button class="clear-btn" onclick="pauseGuitarTimer('finger')">Pause</button>
+                    <button class="clear-btn" onclick="resetGuitarTimer('finger')">Reset</button>
+                </div>
+                <div class="timer-display" id="guitarFingerTimer">10:00</div>
+                <div class="checkbox-section">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="guitarFingerDone" onchange="saveGuitarProgress(true)">
+                        <label for="guitarFingerDone">Finger exercises completed</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section guitar-section">
+                <h2>
+                    <span class="section-timer">15:00</span>
+                    A Modern Method for Guitar, Volume 1
+                </h2>
+                <div class="field-grid">
+                    <div class="input-wrapper full-width">
+                        <label class="input-label" for="guitarMethodFocus">Current page, exercise, or lesson</label>
+                        <input type="text" id="guitarMethodFocus" autocomplete="off" oninput="saveGuitarProgress()">
+                    </div>
+                </div>
+                <div class="timer-controls">
+                    <div class="input-wrapper">
+                        <label class="input-label" for="guitarMethodMinutes">Timer minutes</label>
+                        <input type="number" id="guitarMethodMinutes" min="1" max="120" value="15" onchange="updateGuitarTimerDuration('method')">
+                    </div>
+                    <button onclick="startGuitarTimer('method')">Start</button>
+                    <button class="clear-btn" onclick="pauseGuitarTimer('method')">Pause</button>
+                    <button class="clear-btn" onclick="resetGuitarTimer('method')">Reset</button>
+                </div>
+                <div class="timer-display" id="guitarMethodTimer">15:00</div>
+                <div class="checkbox-section">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="guitarMethodDone" onchange="saveGuitarProgress(true)">
+                        <label for="guitarMethodDone">Book practice completed</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section guitar-section">
+                <h2>🎵 Metronome</h2>
+                <div class="metronome-panel">
+                    <div class="input-wrapper">
+                        <label class="input-label" for="guitarBpm">Tempo (40–240 BPM)</label>
+                        <input type="number" id="guitarBpm" min="40" max="240" value="60" onchange="changeMetronomeTempo()">
+                    </div>
+                    <button id="metronomeToggle" onclick="toggleMetronome()">Start Metronome</button>
+                </div>
+                <div class="metronome-status" id="metronomeStatus" aria-live="polite">60 BPM · Stopped</div>
+            </div>
+
+            <div class="section progress-section">
+                <h2>📊 Guitar Practice Log</h2>
+                <div class="progress-log" id="guitarProgressLog">
+                    <p style="color: #999; text-align: center; padding: 20px;">No guitar sessions yet. Start practicing!</p>
+                </div>
+                <button onclick="saveGuitarLog()" style="width: 100%;">Save Session to Log</button>
+                <button class="reset-btn" onclick="resetGuitarToday()">Reset Guitar Session</button>
+                <button class="reset-btn" onclick="clearGuitarLogs()" style="background: #95a5a6; margin-top: 10px;">Clear Guitar Logs</button>
+            </div>
         </div>
     </div>
 
@@ -611,11 +816,292 @@
         ];
 
         let dozenTimerInterval, scaleTimerInterval;
+        let metronomeInterval = null;
+        let metronomeBeat = 0;
+        let metronomeAudioContext = null;
+
+        const guitarTimerConfig = {
+            finger: {
+                defaultMinutes: 10,
+                inputId: 'guitarFingerMinutes',
+                displayId: 'guitarFingerTimer',
+                remaining: 600,
+                interval: null
+            },
+            method: {
+                defaultMinutes: 15,
+                inputId: 'guitarMethodMinutes',
+                displayId: 'guitarMethodTimer',
+                remaining: 900,
+                interval: null
+            }
+        };
 
         // Initialize
         function init() {
             populateScales();
             loadProgress();
+            initGuitar();
+            switchPracticePage(localStorage.getItem('practiceActivePage') || 'piano');
+        }
+
+        function switchPracticePage(page) {
+            const selectedPage = page === 'guitar' ? 'guitar' : 'piano';
+            document.getElementById('pianoPage').classList.toggle('active', selectedPage === 'piano');
+            document.getElementById('guitarPage').classList.toggle('active', selectedPage === 'guitar');
+            document.getElementById('pianoTab').classList.toggle('active', selectedPage === 'piano');
+            document.getElementById('guitarTab').classList.toggle('active', selectedPage === 'guitar');
+            document.getElementById('pianoTab').setAttribute('aria-selected', selectedPage === 'piano');
+            document.getElementById('guitarTab').setAttribute('aria-selected', selectedPage === 'guitar');
+            localStorage.setItem('practiceActivePage', selectedPage);
+        }
+
+        function initGuitar() {
+            loadGuitarProgress();
+            Object.keys(guitarTimerConfig).forEach(section => {
+                const timer = guitarTimerConfig[section];
+                timer.remaining = getGuitarMinutes(section) * 60;
+                updateGuitarTimerDisplay(section);
+            });
+            updateGuitarProgressLog();
+            updateMetronomeStatus();
+        }
+
+        function getGuitarMinutes(section) {
+            const timer = guitarTimerConfig[section];
+            const input = document.getElementById(timer.inputId);
+            const parsed = Number.parseInt(input.value, 10);
+            const minutes = Number.isFinite(parsed) ? Math.min(120, Math.max(1, parsed)) : timer.defaultMinutes;
+            input.value = minutes;
+            return minutes;
+        }
+
+        function formatGuitarTime(seconds) {
+            const safeSeconds = Math.max(0, seconds);
+            const minutes = Math.floor(safeSeconds / 60);
+            const remainder = safeSeconds % 60;
+            return `${minutes}:${remainder.toString().padStart(2, '0')}`;
+        }
+
+        function updateGuitarTimerDisplay(section) {
+            const timer = guitarTimerConfig[section];
+            const display = document.getElementById(timer.displayId);
+            display.textContent = formatGuitarTime(timer.remaining);
+            display.classList.toggle('warning', timer.remaining <= 60);
+        }
+
+        function startGuitarTimer(section) {
+            const timer = guitarTimerConfig[section];
+            if (timer.interval) return;
+            if (timer.remaining <= 0) {
+                timer.remaining = getGuitarMinutes(section) * 60;
+            }
+            updateGuitarTimerDisplay(section);
+            timer.interval = setInterval(() => {
+                timer.remaining--;
+                updateGuitarTimerDisplay(section);
+                if (timer.remaining <= 0) {
+                    pauseGuitarTimer(section);
+                    playSound();
+                }
+            }, 1000);
+        }
+
+        function pauseGuitarTimer(section) {
+            const timer = guitarTimerConfig[section];
+            clearInterval(timer.interval);
+            timer.interval = null;
+        }
+
+        function resetGuitarTimer(section) {
+            pauseGuitarTimer(section);
+            guitarTimerConfig[section].remaining = getGuitarMinutes(section) * 60;
+            updateGuitarTimerDisplay(section);
+            saveGuitarProgress();
+        }
+
+        function updateGuitarTimerDuration(section) {
+            resetGuitarTimer(section);
+        }
+
+        function getGuitarProgress() {
+            return {
+                date: new Date().toDateString(),
+                fingerBook: document.getElementById('guitarFingerBook').value.trim(),
+                fingerLesson: document.getElementById('guitarFingerLesson').value.trim(),
+                methodFocus: document.getElementById('guitarMethodFocus').value.trim(),
+                fingerMinutes: getGuitarMinutes('finger'),
+                methodMinutes: getGuitarMinutes('method'),
+                bpm: getMetronomeBpm(),
+                fingerDone: document.getElementById('guitarFingerDone').checked,
+                methodDone: document.getElementById('guitarMethodDone').checked
+            };
+        }
+
+        function saveGuitarProgress(logWhenComplete = false) {
+            const progress = getGuitarProgress();
+            localStorage.setItem('guitarTodayProgress', JSON.stringify(progress));
+            if (logWhenComplete && progress.fingerDone && progress.methodDone) {
+                saveGuitarLog(true);
+            }
+        }
+
+        function loadGuitarProgress() {
+            const saved = localStorage.getItem('guitarTodayProgress');
+            if (!saved) return;
+
+            try {
+                const progress = JSON.parse(saved);
+                if (progress.date !== new Date().toDateString()) return;
+                document.getElementById('guitarFingerBook').value = progress.fingerBook || '';
+                document.getElementById('guitarFingerLesson').value = progress.fingerLesson || '';
+                document.getElementById('guitarMethodFocus').value = progress.methodFocus || '';
+                document.getElementById('guitarFingerMinutes').value = progress.fingerMinutes || 10;
+                document.getElementById('guitarMethodMinutes').value = progress.methodMinutes || 15;
+                document.getElementById('guitarBpm').value = progress.bpm || 60;
+                document.getElementById('guitarFingerDone').checked = Boolean(progress.fingerDone);
+                document.getElementById('guitarMethodDone').checked = Boolean(progress.methodDone);
+            } catch (error) {
+                console.log('Unable to load guitar progress');
+            }
+        }
+
+        function saveGuitarLog(silent = false) {
+            const session = getGuitarProgress();
+            const logs = JSON.parse(localStorage.getItem('guitarPracticeLogs') || '[]');
+            const existingIndex = logs.findIndex(log => log.date === session.date);
+            if (existingIndex >= 0) {
+                logs[existingIndex] = session;
+            } else {
+                logs.push(session);
+            }
+            localStorage.setItem('guitarPracticeLogs', JSON.stringify(logs));
+            localStorage.setItem('guitarTodayProgress', JSON.stringify(session));
+            updateGuitarProgressLog();
+            if (!silent) alert('Guitar session saved to the log.');
+        }
+
+        function escapeHtml(value) {
+            const element = document.createElement('div');
+            element.textContent = value || '';
+            return element.innerHTML;
+        }
+
+        function updateGuitarProgressLog() {
+            const logs = JSON.parse(localStorage.getItem('guitarPracticeLogs') || '[]');
+            const logDiv = document.getElementById('guitarProgressLog');
+            if (logs.length === 0) {
+                logDiv.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No guitar sessions yet. Start practicing!</p>';
+                return;
+            }
+
+            logDiv.innerHTML = '';
+            logs.slice().reverse().forEach(log => {
+                const completed = Number(Boolean(log.fingerDone)) + Number(Boolean(log.methodDone));
+                const status = completed === 2 ? 'COMPLETE' : 'PARTIAL';
+                const details = [
+                    log.fingerBook && `Book: ${escapeHtml(log.fingerBook)}`,
+                    log.fingerLesson && `Lesson: ${escapeHtml(log.fingerLesson)}`,
+                    log.methodFocus && `Method: ${escapeHtml(log.methodFocus)}`
+                ].filter(Boolean).join(' · ');
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-date">${escapeHtml(log.date)}</span>
+                    <span class="log-content">${details || 'Guitar practice'} · Done: ${completed}/2</span>
+                    <span class="log-status ${completed === 2 ? '' : 'partial'}">${status}</span>
+                `;
+                logDiv.appendChild(entry);
+            });
+        }
+
+        function resetGuitarToday() {
+            if (!confirm('Reset the current guitar session? Your saved log will stay intact.')) return;
+            document.getElementById('guitarFingerBook').value = '';
+            document.getElementById('guitarFingerLesson').value = '';
+            document.getElementById('guitarMethodFocus').value = '';
+            document.getElementById('guitarFingerMinutes').value = 10;
+            document.getElementById('guitarMethodMinutes').value = 15;
+            document.getElementById('guitarFingerDone').checked = false;
+            document.getElementById('guitarMethodDone').checked = false;
+            stopMetronome();
+            resetGuitarTimer('finger');
+            resetGuitarTimer('method');
+            saveGuitarProgress();
+        }
+
+        function clearGuitarLogs() {
+            if (!confirm('Clear all guitar practice logs? This cannot be undone.')) return;
+            localStorage.removeItem('guitarPracticeLogs');
+            updateGuitarProgressLog();
+        }
+
+        function getMetronomeBpm() {
+            const input = document.getElementById('guitarBpm');
+            const parsed = Number.parseInt(input.value, 10);
+            const bpm = Number.isFinite(parsed) ? Math.min(240, Math.max(40, parsed)) : 60;
+            input.value = bpm;
+            return bpm;
+        }
+
+        function playMetronomeClick(accent) {
+            if (!metronomeAudioContext) {
+                metronomeAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const oscillator = metronomeAudioContext.createOscillator();
+            const gain = metronomeAudioContext.createGain();
+            oscillator.connect(gain);
+            gain.connect(metronomeAudioContext.destination);
+            oscillator.frequency.value = accent ? 1200 : 850;
+            gain.gain.setValueAtTime(0.22, metronomeAudioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, metronomeAudioContext.currentTime + 0.05);
+            oscillator.start();
+            oscillator.stop(metronomeAudioContext.currentTime + 0.06);
+        }
+
+        function metronomeTick() {
+            metronomeBeat = (metronomeBeat % 4) + 1;
+            playMetronomeClick(metronomeBeat === 1);
+            updateMetronomeStatus();
+        }
+
+        function startMetronome() {
+            if (metronomeInterval) return;
+            metronomeBeat = 0;
+            metronomeTick();
+            metronomeInterval = setInterval(metronomeTick, 60000 / getMetronomeBpm());
+            document.getElementById('metronomeToggle').textContent = 'Stop Metronome';
+            saveGuitarProgress();
+        }
+
+        function stopMetronome() {
+            clearInterval(metronomeInterval);
+            metronomeInterval = null;
+            metronomeBeat = 0;
+            document.getElementById('metronomeToggle').textContent = 'Start Metronome';
+            updateMetronomeStatus();
+        }
+
+        function toggleMetronome() {
+            if (metronomeInterval) {
+                stopMetronome();
+            } else {
+                startMetronome();
+            }
+        }
+
+        function changeMetronomeTempo() {
+            const wasRunning = Boolean(metronomeInterval);
+            if (wasRunning) stopMetronome();
+            if (wasRunning) startMetronome();
+            saveGuitarProgress();
+            updateMetronomeStatus();
+        }
+
+        function updateMetronomeStatus() {
+            const bpm = getMetronomeBpm();
+            const status = metronomeInterval ? `Beat ${metronomeBeat}/4` : 'Stopped';
+            document.getElementById('metronomeStatus').textContent = `${bpm} BPM · ${status}`;
         }
 
         function handleDozenEnter(event) {
@@ -847,7 +1333,7 @@
         document.getElementById('scaleSelect').addEventListener('change', updateChordDisplay);
 
         // Save progress to logs when all sections are done
-        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        const checkboxes = document.querySelectorAll('#pianoPage input[type="checkbox"]');
         checkboxes.forEach(cb => {
             cb.addEventListener('change', () => {
                 const dozenDone = document.getElementById('dozenDone').checked;

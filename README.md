@@ -1,6 +1,6 @@
-# 🎹 Piano Practice Tracker
+# 🎹🎸 Music Practice Tracker
 
-A beautiful, interactive practice companion for your daily piano routine!
+A simple, interactive practice companion with separate Piano and Guitar tabs.
 
 ## What's Included
 
@@ -32,6 +32,27 @@ This tracker helps you stay organized with your 28-minute daily practice routine
 - 📱 **Responsive Design** - works on any screen size
 - 🎨 **Beautiful UI** - clean, modern interface optimized for practice
 
+## Guitar Tab
+
+The Guitar page provides a separate 25-minute routine:
+
+### 1. **Finger Exercises** - 10 minutes
+- Blank Book and Lesson fields
+- Customizable timer with start, pause, and reset controls
+- Completion tracking
+
+### 2. **A Modern Method for Guitar, Volume 1** - 15 minutes
+- Current page, exercise, or lesson field
+- Customizable timer with start, pause, and reset controls
+- Completion tracking
+
+### Guitar Tools
+- Built-in adjustable metronome from 40–240 BPM
+- Auto-saved daily progress
+- Separate Guitar practice log
+- Session reset that does not erase the saved log
+- Separate log-clearing control
+
 ## How to Use
 
 1. Open the website in your browser
@@ -58,6 +79,7 @@ Your progress is saved locally in your browser. This means:
 - No data is sent to any server
 - Clearing your browser cache will delete the logs
 - Each day starts fresh!
+- Piano and Guitar data use separate storage and do not overwrite each other
 
 ## Tips
 
